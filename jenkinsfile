@@ -1,0 +1,54 @@
+pipeline {
+    agent any
+
+    environment {
+        PYENV_VERSION = '3.8.5' // Exemple de version Python à utiliser
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                // Cloner le dépôt GitHub
+                git url: 'https://github.com/The-killmonger/DemoJenkinsPython.git'
+            }
+        }
+
+        stage('Setup Python Environment') {
+            steps {
+                // Utiliser le plugin Pyenv Pipeline pour spécifier la version de Python
+                pyenv(name: 'python3', version: "${PYENV_VERSION}") {
+                    sh 'python --version' // Vérifier la version de Python active
+                }
+            }
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                // Installer les dépendances Python avec pip en utilisant Shining Panda
+                shiningPanda('python3') {
+                    sh 'pip install -r requirements.txt'
+                }
+            }
+        }
+
+        stage('Run Tests') {
+            steps {
+                // Exécuter les tests avec pytest
+                shiningPanda('python3') {
+                    sh 'pytest'
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            // Utiliser le plugin Global Post Script pour nettoyer ou notifier
+            globalPostScript {
+                script {
+                    echo 'Pipeline terminé avec succès.'
+                }
+            }
+        }
+    }
+}
